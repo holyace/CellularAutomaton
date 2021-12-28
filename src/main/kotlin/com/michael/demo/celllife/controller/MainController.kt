@@ -1,10 +1,8 @@
 package com.michael.demo.celllife.controller
 
-import com.michael.demo.celllife.LoopTimerTask
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
 import com.michael.demo.celllife.vm.CellViewModel
-import com.michael.demo.celllife.ext.ColorExt
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.canvas.Canvas
@@ -13,10 +11,13 @@ import javafx.scene.control.Button
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
+import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import java.net.URL
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 
 class MainController : IController {
 
@@ -27,6 +28,7 @@ class MainController : IController {
     private var mCenterY = 0.0
 
     private var mRunning = false
+    private var mEditMode = false
 
     private val mTimer by lazy { Timer("evolution-timer") }
 
@@ -54,6 +56,12 @@ class MainController : IController {
     }
 
     @FXML
+    var editPane: Pane? = null
+
+    @FXML
+    var controlPane: Pane? = null
+
+    @FXML
     var reset: Button? = null
 
     @FXML
@@ -68,12 +76,23 @@ class MainController : IController {
     @FXML
     var canvas: Canvas? = null
 
+    @FXML
+    var startEdit: Button? = null
+
+    @FXML
+    var completeEdit: Button? = null
+
     fun handleButtonAction(event: MouseEvent) {
         if (event.button != MouseButton.PRIMARY) {
             println("unsupported mouse event: $event")
             return
         }
         when (event.source) {
+
+            startEdit -> startEdit()
+
+            completeEdit -> completeEdit()
+
             reset -> resetCellEvolution()
 
             start -> startCellEvolution()
@@ -81,6 +100,8 @@ class MainController : IController {
             once -> startCellEvolution(false)
 
             stop -> stopCellEvolution()
+
+            canvas -> onCanvasClick(event.x, event.y)
 
             else -> println("unknown event: ${event.source}")
         }
@@ -97,9 +118,13 @@ class MainController : IController {
     private fun startCellEvolution(loop: Boolean = true) {
         if (mRunning) return
         println("startCellEvolution")
-        stop?.isDisable = false
-        start?.isDisable = true
 
+        startCellEvolutionInternal(loop)
+
+        updateButtonState()
+    }
+
+    private fun startCellEvolutionInternal(loop: Boolean = true) {
         mRunning = true
 
         evolutionInternal(loop)
@@ -127,10 +152,15 @@ class MainController : IController {
     }
 
     private fun stopCellEvolution() {
-        mRunning = false
         println("stopCellEvolution")
-        stop?.isDisable = true
-        start?.isDisable = false
+
+        stopCellEvolutionInternal()
+
+        updateButtonState()
+    }
+
+    private fun stopCellEvolutionInternal() {
+        mRunning = false
     }
 
     override fun onExit() {
@@ -139,7 +169,7 @@ class MainController : IController {
     }
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
-        stop?.isDisable = true
+        updateButtonState()
         canvas?.let {
             mWidth = it.width
             mHeight = it.height
@@ -214,9 +244,9 @@ class MainController : IController {
     private fun updateDraw() {
         canvas?.graphicsContext2D?.let {
             it.clearRect(0.0, 0.0, canvas!!.width, canvas!!.height)
-            it.fill = Color.RED
-            val r = 10.0
-            it.fillOval(mCenterX - r / 2.0, mCenterY - r / 2.0, r, r)
+//            it.fill = Color.RED
+//            val r = 10.0
+//            it.fillOval(mCenterX - r / 2.0, mCenterY - r / 2.0, r, r)
             it.stroke = Color.RED
             it.lineWidth = 1.0
             it.strokeLine(mCenterX, 0.0, mCenterX, mHeight)
@@ -242,6 +272,53 @@ class MainController : IController {
     private fun getScaledStep() = DEFAULT_STEP_SIZE * mScale
 
     private fun getScaledCellSize() = getScaledStep() * STEP_GROUP_COUNT
+
+    private fun updateButtonState() {
+        Platform.runLater {
+            editPane?.isDisable = mRunning
+            controlPane?.isDisable = mEditMode
+            if (!mEditMode) {
+                stop?.isDisable = !mRunning
+                start?.isDisable = mRunning
+                startEdit?.isDisable = false
+                completeEdit?.isDisable = true
+            } else {
+                startEdit?.isDisable = true
+                completeEdit?.isDisable = false
+            }
+
+        }
+    }
+
+    private fun startEdit() {
+        stopCellEvolutionInternal()
+        mEditMode = true
+        mCells = emptyArray()
+        updateDraw()
+        updateButtonState()
+    }
+
+    private fun completeEdit() {
+        mEditMode = false
+        if (mCells.isEmpty()) {
+            mCells = mInitializeCell
+            mViewModel.initialize(mInitializeCell)
+        } else {
+            mViewModel.initialize(mCells)
+        }
+        updateDraw()
+        updateButtonState()
+    }
+
+    private fun onCanvasClick(x: Double, y: Double) {
+        if (!mEditMode) return
+        val xIndex = floor((x - mCenterX) / getScaledCellSize())
+        val yIndex = floor((y - mCenterY) / getScaledCellSize())
+        mCells = mCells.toMutableList().apply {
+            add(Cell(xIndex.toInt(), yIndex.toInt()))
+        }.toTypedArray()
+        updateDraw()
+    }
 
     companion object {
         private const val DEFAULT_STEP_SIZE = 5.0

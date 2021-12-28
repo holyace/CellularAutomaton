@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.michael.demo.celllife.controller.MainController">
+    <VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="120" spacing="20">
+        <VBox styleClass="dashed-border" fx:id="editPane" alignment="CENTER" maxWidth="110.0" minWidth="110.0" prefWidth="110.0"
+              spacing="20" stylesheets="@../css/border_dashed_radius.css">
+            <children>
+                <Button fx:id="startEdit" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="StartEdit"/>
+                <Button fx:id="completeEdit" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Complete"/>
+            </children>
+            <padding>
+                <Insets bottom="20" left="0" right="0" top="20"/>
+            </padding>
+        </VBox>
+
+        <VBox styleClass="dashed-border" fx:id="controlPane" alignment="CENTER" maxWidth="110.0" minWidth="110.0" prefWidth="110.0"
+              spacing="20" stylesheets="@../css/border_dashed_radius.css">
+            <children>
+                <Button fx:id="reset" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Reset"/>
+                <Button fx:id="start" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Start"/>
+                <Button fx:id="once" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="OneStep"/>
+                <Button fx:id="stop" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Stop"/>
+            </children>
+            <padding>
+                <Insets bottom="20" left="0" right="0" top="20"/>
+            </padding>
+        </VBox>
+        <padding>
+            <Insets bottom="10" left="0" right="0" top="10"/>
+        </padding>
+    </VBox>
+    <Canvas fx:id="canvas" height="600.0" onScroll="#handleScrollAction" onScrollFinished="#handleScrollAction"
+            onScrollStarted="#handleScrollAction" width="680.0" onMouseClicked="#handleButtonAction"/>
+</HBox>
