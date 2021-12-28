@@ -9,6 +9,7 @@ class CellViewModel : ICellViewModel {
     private var mYRange = arrayOf(0, 0)
 
     override fun initialize(cells: Array<Cell>) {
+        mCells.clear()
         cells.forEach {
 //            updateRange(it)
             mCells.add(it)
@@ -34,38 +35,50 @@ class CellViewModel : ICellViewModel {
 
         if (mCells.isNullOrEmpty()) return emptyArray()
 
-        var leftTop: Cell = mCells[0]
-        var rightBottom: Cell = mCells[0]
+        var startX = 0
+        var endX = 0
+        var startY = 0
+        var endY = 0
 
         mCells.forEach {
-            if (it.x <= leftTop.x && it.y >= leftTop.y) {
-                leftTop = it
+            if (it.x <= startX) {
+                startX = it.x
             }
 
-            if (it.x >= rightBottom.x && it.y <= rightBottom.y) {
-                rightBottom = it
+            if (it.x >= endX) {
+                endX = it.x
+            }
+
+            if (it.y <= startY) {
+                startY = it.y
+            }
+
+            if (it.y >= endY) {
+                endY = it.y
             }
         }
 
         val rebirthCell: MutableList<Cell> = mutableListOf()
-        for (i in leftTop.x - 1..rightBottom.x + 1) {
-            for (j in rightBottom.y - 1..leftTop.y + 1) {
-                val cell = findCell(i, j)
-                val neighbors = findNeighbors(i, j)
+        for (x in startX - 1..endX + 1) {
+            for (y in startY - 1..endY + 1) {
+                val cell = findCell(x, y)
+                val neighbors = findNeighbors(x, y)
                 val count = neighbors.size
-                if (cell == null && neighbors.size >= REBIRTH_COUNT) {
-                    rebirthCell.add(Cell(i, j, neighbors = neighbors))
+                if (cell == null && count >= REBIRTH_COUNT && count <= MAX_LIVE_COUNT) {
+                    rebirthCell.add(Cell(x, y, neighbors = neighbors))
                 } else if (cell != null) {
                     when {
                         count < MIN_DIE_COUNT -> {
                             cell.state = 0
                         }
+
                         count <= MAX_LIVE_COUNT -> {
                             cell.state = 1
 
                             cell.neighbors = neighbors
 
                         }
+
                         else -> {
                             cell.state = 0
                         }

@@ -245,8 +245,9 @@ class MainController : IController {
 
     companion object {
         private const val DEFAULT_STEP_SIZE = 5.0
-        private const val MIN_CELL_SIZE = 15.0
+        private const val MIN_CELL_SIZE = 10.0
         private const val MAX_CELL_SIZE = 50.0
+
         private var THRESHOLD = 1000 * Double.MIN_VALUE
 
         private val sPoint2D = Point2D(0.0, 0.0)
@@ -265,7 +266,7 @@ class MainController : IController {
         const val MIN_SCALE = MIN_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
         const val MAX_SCALE = MAX_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
 
-        const val DELAY = 1000L
+        const val DELAY = 300L
 
         fun isZero(number: Number): Boolean {
             println("number: $number, threshold: $THRESHOLD")
