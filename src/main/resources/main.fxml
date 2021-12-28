@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.michael.demo.celllife.controller.MainController">
+    <VBox fx:id="buttons" alignment="BASELINE_CENTER" prefHeight="600.0" prefWidth="120" spacing="20">
+        <children>
+            <Button maxWidth="80" fx:id="reset" mnemonicParsing="false" text="Reset" onMouseClicked="#handleButtonAction"/>
+            <Button maxWidth="80" fx:id="start" mnemonicParsing="false" text="Start" onMouseClicked="#handleButtonAction"/>
+            <Button maxWidth="80" fx:id="once" mnemonicParsing="false" text="OneStep" onMouseClicked="#handleButtonAction"/>
+            <Button maxWidth="80" fx:id="stop" mnemonicParsing="false" text="Stop" onMouseClicked="#handleButtonAction"/>
+        </children>
+        <padding>
+            <Insets left="0" top="20" right="0" bottom="20"/>
+        </padding>
+    </VBox>
+    <Canvas fx:id="canvas" height="600.0" width="680.0" onScrollStarted="#handleScrollAction"
+            onScroll="#handleScrollAction" onScrollFinished="#handleScrollAction"/>
+</HBox>
