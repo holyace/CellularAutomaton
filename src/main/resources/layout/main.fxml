@@ -13,6 +13,13 @@
             <children>
                 <Button fx:id="startEdit" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
                         text="StartEdit"/>
+
+                <Button fx:id="randomCell" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Random"/>
+
+                <Button fx:id="clearEdit" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
+                        text="Clear"/>
+
                 <Button fx:id="completeEdit" maxWidth="80" mnemonicParsing="false" onMouseClicked="#handleButtonAction"
                         text="Complete"/>
             </children>

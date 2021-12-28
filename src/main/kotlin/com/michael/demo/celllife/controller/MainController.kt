@@ -80,6 +80,12 @@ class MainController : IController {
     var startEdit: Button? = null
 
     @FXML
+    var randomCell: Button? = null
+
+    @FXML
+    var clearEdit: Button? = null
+
+    @FXML
     var completeEdit: Button? = null
 
     fun handleButtonAction(event: MouseEvent) {
@@ -90,6 +96,10 @@ class MainController : IController {
         when (event.source) {
 
             startEdit -> startEdit()
+
+            randomCell -> randomCell()
+
+            clearEdit -> clearEdit()
 
             completeEdit -> completeEdit()
 
@@ -281,9 +291,13 @@ class MainController : IController {
                 stop?.isDisable = !mRunning
                 start?.isDisable = mRunning
                 startEdit?.isDisable = false
+                clearEdit?.isDisable = true
+                randomCell?.isDisable = true
                 completeEdit?.isDisable = true
             } else {
                 startEdit?.isDisable = true
+                clearEdit?.isDisable = false
+                randomCell?.isDisable = false
                 completeEdit?.isDisable = false
             }
 
@@ -313,16 +327,46 @@ class MainController : IController {
     private fun onCanvasClick(x: Double, y: Double) {
         if (!mEditMode) return
         val xIndex = floor((x - mCenterX) / getScaledCellSize())
-        val yIndex = floor((y - mCenterY) / getScaledCellSize())
+        val yIndex = ceil((mCenterY - y) / getScaledCellSize())
         mCells = mCells.toMutableList().apply {
             add(Cell(xIndex.toInt(), yIndex.toInt()))
         }.toTypedArray()
         updateDraw()
     }
 
+    private fun clearEdit() {
+        mCells = emptyArray()
+        updateDraw()
+    }
+
+    private fun randomCell() {
+        val minX = (floor(0 - mCenterX) / getScaledCellSize()).toInt()
+        val maxX = (floor(mWidth - mCenterX) / getScaledCellSize()).toInt()
+        val minY = (ceil(mCenterY - mHeight) / getScaledCellSize()).toInt()
+        val maxY = (ceil(mCenterY) / getScaledCellSize()).toInt()
+
+        val max = (maxX - minX) * (maxY - minY)
+        val minCount = (max * .1).toInt()
+        val maxCount = (max * .3).toInt()
+
+        val cells = mutableListOf<Cell>()
+        var count = (minCount..maxCount).random()
+        while (count >= 0) {
+            val cell = Cell((minX..maxX).random(), (minY..maxY).random())
+            if (!cells.contains(cell)) {
+                cells.add(cell)
+                count--
+            }
+        }
+
+        mCells = cells.toTypedArray()
+
+        updateDraw()
+    }
+
     companion object {
         private const val DEFAULT_STEP_SIZE = 5.0
-        private const val MIN_CELL_SIZE = 10.0
+        private const val MIN_CELL_SIZE = 13.0
         private const val MAX_CELL_SIZE = 50.0
 
         private var THRESHOLD = 1000 * Double.MIN_VALUE
@@ -343,7 +387,7 @@ class MainController : IController {
         const val MIN_SCALE = MIN_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
         const val MAX_SCALE = MAX_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
 
-        const val DELAY = 300L
+        const val DELAY = 100L
 
         fun isZero(number: Number): Boolean {
             println("number: $number, threshold: $THRESHOLD")
@@ -353,7 +397,7 @@ class MainController : IController {
         fun transformCoordinate(cell: Cell, centerX: Double, centerY: Double,
                                 cellSize: Double, out: Point2D) {
             out.x = centerX + cell.x * cellSize
-            out.y = centerY + cell.y * cellSize
+            out.y = centerY - cell.y * cellSize
         }
     }
 }
