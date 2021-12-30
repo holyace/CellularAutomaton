@@ -1,6 +1,7 @@
 package com.michael.demo.celllife
 
 import com.michael.demo.celllife.controller.IController
+import com.michael.demo.celllife.res.Resources
 import javafx.application.Application
 import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
@@ -18,7 +19,7 @@ class Launcher: Application() {
             primaryStage?.apply {
                 scene = Scene(root)
                 isResizable = true
-                title = "Life Cell"
+                title = Resources.getString("app_name")
                 initStyle(StageStyle.DECORATED)
                 onCloseRequest = EventHandler {
                     loader.getController<IController>()?.onExit()
