@@ -96,7 +96,7 @@ class CellViewModel : ICellViewModel {
             mCells.addAll(rebirthCell)
         }
 
-        return mCells.toTypedArray()
+        return mCells.toTypedArray().copyOf()
     }
 
     private fun isVisible(cell: Cell, xRange: Array<Int>, yRange: Array<Int>): Boolean {

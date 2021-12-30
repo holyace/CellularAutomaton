@@ -45,9 +45,11 @@ class MainController : IController {
 
     private val mEvolutionTask by lazy {
         Runnable {
+            val now = System.currentTimeMillis()
+
             mCells = mViewModel.evolution()
 
-            println("run evolution cells: ${mCells?.size}")
+            println("run evolution cells: ${mCells.size}, cost: ${System.currentTimeMillis() - now}ms")
 
             Platform.runLater {
                 updateDraw()
@@ -189,6 +191,7 @@ class MainController : IController {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun drawLines(graphics: GraphicsContext, canvas: Canvas) {
 
         val centerX = mCenterX
@@ -244,6 +247,7 @@ class MainController : IController {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun drawCell(graphics: GraphicsContext, canvas: Canvas, cell: Cell) {
         val cellSize = getScaledCellSize()
         graphics.fill = Color.web(cell.color)
@@ -252,6 +256,7 @@ class MainController : IController {
     }
 
     private fun updateDraw() {
+        val now = System.currentTimeMillis()
         canvas?.graphicsContext2D?.let {
             it.clearRect(0.0, 0.0, canvas!!.width, canvas!!.height)
 //            it.fill = Color.RED
@@ -264,6 +269,7 @@ class MainController : IController {
             drawLines(it, canvas!!)
             drawCells(it, canvas!!)
         }
+        println("draw cost ${System.currentTimeMillis() - now}ms")
     }
 
     fun handleScrollAction(event: ScrollEvent) {
