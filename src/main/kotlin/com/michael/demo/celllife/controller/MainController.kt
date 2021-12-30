@@ -2,7 +2,7 @@ package com.michael.demo.celllife.controller
 
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
-import com.michael.demo.celllife.vm.CellViewModel
+import com.michael.demo.celllife.vm.CellViewModelV2
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.canvas.Canvas
@@ -36,7 +36,7 @@ class MainController : IController {
             Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
 
     private val mViewModel by lazy {
-        CellViewModel().apply {
+        CellViewModelV2().apply {
             initialize(mInitializeCell)
         }
     }
@@ -187,6 +187,7 @@ class MainController : IController {
             mHeight = it.height
             mCenterX = mWidth / 2.0
             mCenterY = mHeight / 2.0
+            mViewModel.updateRegion(getXIndex(0.0), getXIndex(mWidth), getYIndex(0.0), getYIndex(mHeight))
             updateDraw()
         }
     }
@@ -282,6 +283,7 @@ class MainController : IController {
             mScale = MAX_SCALE
         }
 //        println("scale: ${mScale}, event: $event")
+        mViewModel.updateRegion(getXIndex(0.0), getXIndex(mWidth), getYIndex(0.0), getYIndex(mHeight))
         updateDraw()
     }
 
@@ -327,19 +329,20 @@ class MainController : IController {
         mEditMode = false
         if (mCells.isEmpty()) {
             mCells = mInitializeCell
-            mViewModel.initialize(mInitializeCell)
-        } else {
-            mViewModel.initialize(mCells)
         }
+        mViewModel.initialize(mCells)
         updateDraw()
         updateButtonState()
     }
 
+    private fun getXIndex(x: Double) = floor((x - mCenterX) / getScaledCellSize()).toInt()
+    private fun getYIndex(y: Double) = ceil((mCenterY - y) / getScaledCellSize()).toInt()
+
     private fun onCanvasClick(x: Double, y: Double) {
         if (!mEditMode) return
-        val xIndex = floor((x - mCenterX) / getScaledCellSize())
-        val yIndex = ceil((mCenterY - y) / getScaledCellSize())
-        val cell = Cell(xIndex.toInt(), yIndex.toInt())
+        val xIndex = getXIndex(x)
+        val yIndex = getYIndex(y)
+        val cell = Cell(xIndex, yIndex)
         val cells = mCells.toMutableList()
         if (cells.contains(cell)) {
             cells.remove(cell)
