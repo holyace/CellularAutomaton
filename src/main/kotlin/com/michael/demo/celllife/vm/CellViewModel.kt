@@ -58,6 +58,8 @@ class CellViewModel : ICellViewModel {
             }
         }
 
+        println("evolution range: x[$startX, $endX], y[$startY, $endY]")
+
         val rebirthCell: MutableList<Cell> = mutableListOf()
         for (x in startX - 1..endX + 1) {
             for (y in startY - 1..endY + 1) {

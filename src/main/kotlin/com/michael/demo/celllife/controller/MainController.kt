@@ -208,9 +208,9 @@ class MainController : IController {
             if (x > LONG_LINE && (total - count) % STEP_GROUP_COUNT == 0) {
                 graphics.stroke = Color.BLACK
                 graphics.strokeLine(x, 0.0, x, LONG_LINE)
-                graphics.setLineDashes(LINE_DASH)
+                graphics.setLineDashes(*getScaledLineDash())
                 graphics.stroke = Color.GRAY
-                graphics.strokeLine(x, LONG_LINE + LINE_DASH, x, mHeight)
+                graphics.strokeLine(x, LONG_LINE + getLineDashLength(), x, mHeight)
             } else {
                 graphics.setLineDashes(0.0)
                 graphics.stroke = Color.BLACK
@@ -227,9 +227,9 @@ class MainController : IController {
             if (y > LONG_LINE && (total - count) % STEP_GROUP_COUNT == 0) {
                 graphics.stroke = Color.BLACK
                 graphics.strokeLine(0.0, y, LONG_LINE, y)
-                graphics.setLineDashes(LINE_DASH)
+                graphics.setLineDashes(*getScaledLineDash())
                 graphics.stroke = Color.GRAY
-                graphics.strokeLine(LONG_LINE + LINE_DASH, y, mWidth, y)
+                graphics.strokeLine(LONG_LINE + getLineDashLength(), y, mWidth, y)
             } else {
                 graphics.setLineDashes(0.0)
                 graphics.stroke = Color.BLACK
@@ -287,6 +287,10 @@ class MainController : IController {
 
     private fun getScaledStep() = DEFAULT_STEP_SIZE * mScale
 
+    private fun getScaledLineDash() = doubleArrayOf(DASH_LINE_LENGTH, DASH_LENGTH)
+
+    private fun getLineDashLength() = DASH_LINE_LENGTH + DASH_LENGTH
+
     private fun getScaledCellSize() = getScaledStep() * STEP_GROUP_COUNT
 
     private fun updateButtonState() {
@@ -296,6 +300,7 @@ class MainController : IController {
             if (!mEditMode) {
                 stop?.isDisable = !mRunning
                 start?.isDisable = mRunning
+                once?.isDisable = mRunning
                 startEdit?.isDisable = false
                 clearEdit?.isDisable = true
                 randomCell?.isDisable = true
@@ -334,9 +339,14 @@ class MainController : IController {
         if (!mEditMode) return
         val xIndex = floor((x - mCenterX) / getScaledCellSize())
         val yIndex = ceil((mCenterY - y) / getScaledCellSize())
-        mCells = mCells.toMutableList().apply {
-            add(Cell(xIndex.toInt(), yIndex.toInt()))
-        }.toTypedArray()
+        val cell = Cell(xIndex.toInt(), yIndex.toInt())
+        val cells = mCells.toMutableList()
+        if (cells.contains(cell)) {
+            cells.remove(cell)
+        } else {
+            cells.add(cell)
+        }
+        mCells = cells.toTypedArray()
         updateDraw()
     }
 
@@ -372,7 +382,7 @@ class MainController : IController {
 
     companion object {
         private const val DEFAULT_STEP_SIZE = 5.0
-        private const val MIN_CELL_SIZE = 13.0
+        private const val MIN_CELL_SIZE = 3.0
         private const val MAX_CELL_SIZE = 50.0
 
         private var THRESHOLD = 1000 * Double.MIN_VALUE
@@ -382,7 +392,8 @@ class MainController : IController {
         const val SHORT_LINE = 5.0
 
         const val LONG_LINE = 10.0
-        const val LINE_DASH = 5.0
+        const val DASH_LINE_LENGTH = 1.0
+        const val DASH_LENGTH = 5.0
 
         const val STEP_GROUP_COUNT = 5
 
