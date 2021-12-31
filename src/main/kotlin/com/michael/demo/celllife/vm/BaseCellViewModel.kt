@@ -34,28 +34,6 @@ abstract class BaseCellViewModel : ICellViewModel {
         const val MAX_LIVE_COUNT = 3
         const val REBIRTH_COUNT = 3
 
-        fun updateCellState(cell: Cell, neighbors: MutableList<Cell>, diedCell: MutableList<Cell>) {
-            val count = neighbors.size
-            when {
-                count < MIN_DIE_COUNT -> {
-                    cell.state = 0
-                    diedCell.add(cell)
-                }
-
-                count <= MAX_LIVE_COUNT -> {
-                    cell.state = 1
-
-                    cell.neighbors = neighbors
-
-                }
-
-                else -> {
-                    cell.state = 0
-                    diedCell.add(cell)
-                }
-            }
-        }
-
         fun isNeighbors(x: Int, y:Int, cell2: Cell): Boolean {
             return (x != cell2.x || y != cell2.y) &&
                     x <= cell2.x + 1 && x >= cell2.x - 1 &&
@@ -201,6 +179,50 @@ abstract class BaseCellViewModel : ICellViewModel {
                         if (!neighbor.isAlive()) miter.remove()
                     }
                 }
+            }
+        }
+
+        fun evolutionRegion(rx: Range, ry: Range, cells: MutableList<Cell>) {
+
+            val rebirthCell = mutableListOf<Cell>()
+            val diedCell = mutableListOf<Cell>()
+
+            for (x in rx.min - 1..rx.max + 1) {
+                for (y in ry.min - 1..ry.max + 1) {
+                    val (cell, neighbors) = findRegion(x, y, cells)
+                    val count = neighbors.size
+                    if (cell == null && count >= REBIRTH_COUNT && count <= MAX_LIVE_COUNT) {
+                        rebirthCell.add(Cell(x, y, neighbors = neighbors))
+                    } else if (cell != null) {
+                        when {
+                            count < MIN_DIE_COUNT -> {
+                                cell.state = 0
+                                diedCell.add(cell)
+                            }
+
+                            count <= MAX_LIVE_COUNT -> {
+                                cell.state = 1
+
+                                cell.neighbors = neighbors
+
+                            }
+
+                            else -> {
+                                cell.state = 0
+                                diedCell.add(cell)
+                            }
+                        }
+                    }
+                }
+            }
+
+            cells.removeAll(diedCell)
+
+            rebirthCell.forEach { cell ->
+                cell.neighbors.forEach { neighbor ->
+                    neighbor.neighbors.add(cell)
+                }
+                cells.add(cell)
             }
         }
     }

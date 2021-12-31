@@ -37,7 +37,7 @@ class MainController : IController {
             Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
 
     private val mViewModel by lazy {
-        CellViewModelV3().apply {
+        CellViewModelV2().apply {
             initialize(mInitializeCell)
         }
     }

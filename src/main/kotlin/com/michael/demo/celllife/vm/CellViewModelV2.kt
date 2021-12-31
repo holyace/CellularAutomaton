@@ -10,26 +10,7 @@ class CellViewModelV2 : BaseCellViewModel() {
 
         println("evolution range: x[${rx.min}, ${rx.max}], y[${ry.min}, ${ry.max}]")
 
-        val rebirthCell: MutableList<Cell> = mutableListOf()
-        val diedCell = mutableListOf<Cell>()
-
-        for (x in rx.min - 1..rx.max + 1) {
-            for (y in ry.min - 1..ry.max + 1) {
-                val (cell, neighbors) = findRegion(x, y, mCells)
-                val count = neighbors.size
-                if (cell == null && count >= REBIRTH_COUNT && count <= MAX_LIVE_COUNT) {
-                    rebirthCell.add(Cell(x, y, neighbors = neighbors))
-                } else if (cell != null) {
-                    updateCellState(cell, neighbors, diedCell)
-                }
-            }
-        }
-
-        mCells.removeAll(diedCell)
-
-        if (!rebirthCell.isNullOrEmpty()) {
-            mCells.addAll(rebirthCell)
-        }
+        evolutionRegion(rx, ry, mCells)
 
         return mCells.toTypedArray()
     }
