@@ -5,9 +5,11 @@ import com.michael.demo.celllife.model.Tribe
 
 class CellViewModelV3 : BaseCellViewModel() {
 
-    override fun evolution(): Array<Cell> {
+    override fun evolution(): List<Cell> {
 
         val tribes = splitTribes(mCells)
+
+        println("splitTribes ${tribes.size}")
 
         tribes.forEach {
             evolutionTribe(it)
@@ -15,11 +17,13 @@ class CellViewModelV3 : BaseCellViewModel() {
 
         mCells = mergeTribes(tribes)
 
-        return mCells.toTypedArray()
+        return mCells
     }
 
     private fun evolutionTribe(tribe: Tribe) {
 
-        evolutionRegion(tribe.rx, tribe.ry, tribe.members)
+        println("evolutionTribe ${tribe.region}, members: ${tribe.members.size}")
+
+        evolutionRegion(tribe.region, tribe.members)
     }
 }

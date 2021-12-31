@@ -18,7 +18,7 @@ class Launcher: Application() {
             val root = loader.load<Pane>()
             primaryStage?.apply {
                 scene = Scene(root)
-                isResizable = true
+                isResizable = false
                 title = Resources.getString("app_name")
                 initStyle(StageStyle.DECORATED)
                 onCloseRequest = EventHandler {

@@ -33,16 +33,16 @@ class MainController : IController {
 
     private val mTimer by lazy { Timer("evolution-timer") }
 
-    private val mInitializeCell = arrayOf(
+    private val mInitializeCell = listOf(
             Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
 
     private val mViewModel by lazy {
-        CellViewModelV2().apply {
+        CellViewModelV3().apply {
             initialize(mInitializeCell)
         }
     }
 
-    private var mCells: Array<Cell> = mInitializeCell
+    private var mCells: List<Cell> = mInitializeCell
 
     private val mEvolutionTask by lazy {
         Runnable {
@@ -321,7 +321,7 @@ class MainController : IController {
     private fun startEdit() {
         stopCellEvolutionInternal()
         mEditMode = true
-        mCells = emptyArray()
+        mCells = emptyList()
         updateDraw()
         updateButtonState()
     }
@@ -350,12 +350,12 @@ class MainController : IController {
         } else {
             cells.add(cell)
         }
-        mCells = cells.toTypedArray()
+        mCells = cells
         updateDraw()
     }
 
     private fun clearEdit() {
-        mCells = emptyArray()
+        mCells = emptyList()
         updateDraw()
     }
 
@@ -379,7 +379,7 @@ class MainController : IController {
             }
         }
 
-        mCells = cells.toTypedArray()
+        mCells = cells
 
         updateDraw()
     }

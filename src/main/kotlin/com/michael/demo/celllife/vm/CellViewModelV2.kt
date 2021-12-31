@@ -4,15 +4,15 @@ import com.michael.demo.celllife.model.Cell
 
 class CellViewModelV2 : BaseCellViewModel() {
 
-    override fun evolution(): Array<Cell> {
+    override fun evolution(): List<Cell> {
 
-        val (rx, ry) = getTribeRegion(mCells)
+        val region = getTribeRegion(mCells)
 
-        println("evolution range: x[${rx.min}, ${rx.max}], y[${ry.min}, ${ry.max}]")
+        println("evolution region: $region, cells: ${mCells.size}")
 
-        evolutionRegion(rx, ry, mCells)
+        evolutionRegion(region, mCells)
 
-        return mCells.toTypedArray()
+        return mCells
     }
 
 }

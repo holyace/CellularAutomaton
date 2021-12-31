@@ -32,4 +32,7 @@ class Range(val min: Int, val max: Int) {
         return result
     }
 
+    override fun toString(): String {
+        return "[$min, $max]"
+    }
 }
