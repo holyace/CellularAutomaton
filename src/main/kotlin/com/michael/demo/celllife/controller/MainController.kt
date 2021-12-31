@@ -9,6 +9,8 @@ import javafx.fxml.FXML
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Button
+import javafx.scene.control.Slider
+import javafx.scene.control.TextField
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
@@ -46,14 +48,18 @@ class MainController : IController {
 
     private val mEvolutionTask by lazy {
         Runnable {
-            val now = System.currentTimeMillis()
+            try {
+                val now = System.currentTimeMillis()
 
-            mCells = mViewModel.evolution()
+                mCells = mViewModel.evolution()
 
-            println("run evolution cells: ${mCells.size}, cost: ${System.currentTimeMillis() - now}ms")
+                println("run evolution cells: ${mCells.size}, cost: ${System.currentTimeMillis() - now}ms")
 
-            Platform.runLater {
-                updateDraw()
+                Platform.runLater {
+                    updateDraw()
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
         }
     }
@@ -86,37 +92,47 @@ class MainController : IController {
     var randomCell: Button? = null
 
     @FXML
+    var seekBar: Slider? = null
+
+    @FXML
+    var density: TextField? = null
+
+    @FXML
     var clearEdit: Button? = null
 
     @FXML
     var completeEdit: Button? = null
 
     fun handleButtonAction(event: MouseEvent) {
-        if (event.button != MouseButton.PRIMARY) {
-            println("unsupported mouse event: $event")
-            return
-        }
-        when (event.source) {
+        try {
+            if (event.button != MouseButton.PRIMARY) {
+                println("unsupported mouse event: $event")
+                return
+            }
+            when (event.source) {
 
-            startEdit -> startEdit()
+                startEdit -> startEdit()
 
-            randomCell -> randomCell()
+                randomCell -> randomCell()
 
-            clearEdit -> clearEdit()
+                clearEdit -> clearEdit()
 
-            completeEdit -> completeEdit()
+                completeEdit -> completeEdit()
 
-            reset -> resetCellEvolution()
+                reset -> resetCellEvolution()
 
-            start -> startCellEvolution()
+                start -> startCellEvolution()
 
-            once -> startCellEvolution(false)
+                once -> startCellEvolution(false)
 
-            stop -> stopCellEvolution()
+                stop -> stopCellEvolution()
 
-            canvas -> onCanvasClick(event.x, event.y)
+                canvas -> onCanvasClick(event.x, event.y)
 
-            else -> println("unknown event: ${event.source}")
+                else -> println("unknown event: ${event.source}")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -146,18 +162,22 @@ class MainController : IController {
     private fun evolutionInternal(loop: Boolean = true) {
         mTimer.schedule(object : TimerTask() {
             override fun run() {
-                if (!mRunning) return
+                try {
+                    if (!mRunning) return
 
-                mEvolutionTask.run()
+                    mEvolutionTask.run()
 
-                if (mCells.isNullOrEmpty()) {
-                    Platform.runLater { stopCellEvolution() }
-                }
+                    if (mCells.isNullOrEmpty()) {
+                        Platform.runLater { stopCellEvolution() }
+                    }
 
-                if (loop) {
-                    evolutionInternal()
-                } else {
-                    Platform.runLater { stopCellEvolution() }
+                    if (loop) {
+                        evolutionInternal()
+                    } else {
+                        Platform.runLater { stopCellEvolution() }
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
                 }
             }
 
@@ -182,6 +202,14 @@ class MainController : IController {
     }
 
     override fun initialize(location: URL?, resources: ResourceBundle?) {
+
+        seekBar?.let {
+            it.max = 100.0
+            it.valueProperty()?.addListener { _, _, newValue ->
+                density?.text = newValue.toString()
+            }
+        }
+
         updateButtonState()
         canvas?.let {
             mWidth = it.width
@@ -275,17 +303,21 @@ class MainController : IController {
     }
 
     fun handleScrollAction(event: ScrollEvent) {
-        val dy = event.textDeltaY
-        mScale += SCROLL_SCALE_FACTOR * dy / mHeight
-        if (mScale <= MIN_SCALE) {
-            mScale = MIN_SCALE
-        }
-        if (mScale >= MAX_SCALE) {
-            mScale = MAX_SCALE
-        }
+        try {
+            val dy = event.textDeltaY
+            mScale += SCROLL_SCALE_FACTOR * dy / mHeight
+            if (mScale <= MIN_SCALE) {
+                mScale = MIN_SCALE
+            }
+            if (mScale >= MAX_SCALE) {
+                mScale = MAX_SCALE
+            }
 //        println("scale: ${mScale}, event: $event")
-        mViewModel.updateRegion(getXIndex(0.0), getXIndex(mWidth), getYIndex(0.0), getYIndex(mHeight))
-        updateDraw()
+            mViewModel.updateRegion(getXIndex(0.0), getXIndex(mWidth), getYIndex(0.0), getYIndex(mHeight))
+            updateDraw()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun getScaledStep() = DEFAULT_STEP_SIZE * mScale
@@ -337,7 +369,7 @@ class MainController : IController {
     }
 
     private fun getXIndex(x: Double) = floor((x - mCenterX) / getScaledCellSize()).toInt()
-    private fun getYIndex(y: Double) = ceil((mCenterY - y) / getScaledCellSize()).toInt()
+    private fun getYIndex(y: Double) = floor((mCenterY - y) / getScaledCellSize()).toInt()
 
     private fun onCanvasClick(x: Double, y: Double) {
         if (!mEditMode) return
@@ -360,19 +392,22 @@ class MainController : IController {
     }
 
     private fun randomCell() {
-        val minX = (floor(0 - mCenterX) / getScaledCellSize()).toInt()
-        val maxX = (floor(mWidth - mCenterX) / getScaledCellSize()).toInt()
-        val minY = (ceil(mCenterY - mHeight) / getScaledCellSize()).toInt()
-        val maxY = (ceil(mCenterY) / getScaledCellSize()).toInt()
+        val densityValue = density?.text?.toDouble()?:0.0
+        if (isZero(densityValue)) return
 
-        val max = (maxX - minX) * (maxY - minY)
-        val minCount = (max * .1).toInt()
-        val maxCount = (max * .3).toInt()
+        val minX = getXIndex(0.1)
+        val maxX = getXIndex(mWidth)
+        val minY = getYIndex(mHeight)
+        val maxY = getYIndex(0.1)
+
+        val max = ceil(mWidth / getScaledCellSize()).toInt() * ceil(mHeight / getScaledCellSize()).toInt()
 
         val cells = mutableListOf<Cell>()
-        var count = (minCount..maxCount).random()
-        while (count >= 0) {
-            val cell = Cell((minX..maxX).random(), (minY..maxY).random())
+
+        var count = (densityValue * max / 100.0).toInt()
+
+        while (count > 0) {
+            val cell = Cell((minX .. maxX).random(), (minY .. maxY).random())
             if (!cells.contains(cell)) {
                 cells.add(cell)
                 count--
@@ -418,7 +453,7 @@ class MainController : IController {
         fun transformCoordinate(cell: Cell, centerX: Double, centerY: Double,
                                 cellSize: Double, out: Point2D) {
             out.x = centerX + cell.x * cellSize
-            out.y = centerY - cell.y * cellSize
+            out.y = centerY - (cell.y + 1) * cellSize
         }
     }
 }

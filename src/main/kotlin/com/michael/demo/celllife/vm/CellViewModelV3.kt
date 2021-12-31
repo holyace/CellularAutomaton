@@ -22,7 +22,7 @@ class CellViewModelV3 : BaseCellViewModel() {
 
     private fun evolutionTribe(tribe: Tribe) {
 
-        println("evolutionTribe ${tribe.region}, members: ${tribe.members.size}")
+//        println("evolutionTribe ${tribe.region}, members: ${tribe.members.size}")
 
         evolutionRegion(tribe.region, tribe.members)
     }
