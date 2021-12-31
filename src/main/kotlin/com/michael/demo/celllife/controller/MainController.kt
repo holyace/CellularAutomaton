@@ -3,6 +3,7 @@ package com.michael.demo.celllife.controller
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
 import com.michael.demo.celllife.vm.CellViewModelV2
+import com.michael.demo.celllife.vm.CellViewModelV3
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.canvas.Canvas
@@ -36,7 +37,7 @@ class MainController : IController {
             Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
 
     private val mViewModel by lazy {
-        CellViewModelV2().apply {
+        CellViewModelV3().apply {
             initialize(mInitializeCell)
         }
     }

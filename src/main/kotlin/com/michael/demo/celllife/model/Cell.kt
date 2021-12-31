@@ -1,16 +1,14 @@
 package com.michael.demo.celllife.model
 
-data class Cell(var x: Int, var y: Int,
+class Cell(var x: Int, var y: Int,
                 var color: String = "0x333333", var state: Int = 1,
-                var neighbors: Array<Cell>? = null) {
-
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
+                var neighbors: MutableList<Cell> = mutableListOf()) {
 
     override fun toString(): String {
         return "Cell([$x, $y], state: $state, neighbors: ${neighbors?.size?:0})"
     }
+
+    fun isAlive() = state > 0
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -20,10 +18,15 @@ data class Cell(var x: Int, var y: Int,
 
         if (x != other.x) return false
         if (y != other.y) return false
-        if (state != other.state) return false
 
         return true
     }
 
-    fun isAlive() = state > 0
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        return result
+    }
+
+
 }
