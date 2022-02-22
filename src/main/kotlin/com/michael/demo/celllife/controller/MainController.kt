@@ -2,8 +2,10 @@ package com.michael.demo.celllife.controller
 
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
+import com.michael.demo.celllife.vm.BaseCellViewModel
 import com.michael.demo.celllife.vm.CellViewModelV2
 import com.michael.demo.celllife.vm.CellViewModelV3
+import com.michael.demo.celllife.vm.FireSpreadViewModel
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.canvas.Canvas
@@ -33,15 +35,18 @@ class MainController : IController {
     private var mRunning = false
     private var mEditMode = false
 
+    private val mColorCache by lazy { mutableMapOf<String, Color>() }
+
     private val mTimer by lazy { Timer("evolution-timer") }
 
     private val mInitializeCell = listOf(
             Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
 
     private val mViewModel by lazy {
-        CellViewModelV3().apply {
-            initialize(mInitializeCell)
-        }
+        val vm: BaseCellViewModel = FireSpreadViewModel()
+//        vm = CellViewModelV3()
+        vm.initialize(mInitializeCell)
+        vm
     }
 
     private var mCells: List<Cell> = mInitializeCell
@@ -280,7 +285,7 @@ class MainController : IController {
     @Suppress("UNUSED_PARAMETER")
     private fun drawCell(graphics: GraphicsContext, canvas: Canvas, cell: Cell) {
         val cellSize = getScaledCellSize()
-        graphics.fill = Color.web(cell.color)
+        graphics.fill = getColor(cell)
         transformCoordinate(cell, mCenterX, mCenterY, cellSize, sPoint2D)
         graphics.fillRect(sPoint2D.x, sPoint2D.y, cellSize, cellSize)
     }
@@ -339,15 +344,29 @@ class MainController : IController {
                 startEdit?.isDisable = false
                 clearEdit?.isDisable = true
                 randomCell?.isDisable = true
+                seekBar?.isDisable = true
+                density?.isDisable = true
                 completeEdit?.isDisable = true
             } else {
                 startEdit?.isDisable = true
                 clearEdit?.isDisable = false
                 randomCell?.isDisable = false
+                seekBar?.isDisable = false
+                density?.isDisable = false
                 completeEdit?.isDisable = false
             }
 
         }
+    }
+
+    private fun getColor(cell: Cell): Color {
+        val colorStr = cell.getColor()
+        var color = mColorCache[colorStr]
+        if (color == null) {
+            color = Color.web(colorStr)
+            mColorCache[colorStr] = color
+        }
+        return color!!
     }
 
     private fun startEdit() {

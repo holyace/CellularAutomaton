@@ -5,6 +5,10 @@ data class Region constructor(val rx: Range, val ry: Range) {
     constructor(minX: Int, maxX: Int, minY: Int, maxY: Int):
             this(Range(minX, maxX), Range(minY, maxY))
 
+    fun rangeX() = rx.range()
+
+    fun rangeY() = ry.range()
+
     fun contains(x: Int, y: Int): Boolean {
         return rx.contains(x) and ry.contains(y)
     }

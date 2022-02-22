@@ -1,8 +1,9 @@
 package com.michael.demo.celllife.model
 
 class Cell(var x: Int, var y: Int,
-                var color: String = "0x333333", var state: Int = 1,
-                var neighbors: MutableList<Cell> = mutableListOf()) {
+           private var colors: MutableMap<Int, String> = mutableMapOf(Pair(0, "0x999999"), Pair(1, "0x330000")),
+           var state: Int = 1,
+           var neighbors: MutableList<Cell> = mutableListOf()) {
 
     override fun toString(): String {
         return "Cell([$x, $y], state: $state, neighbors: ${neighbors?.size?:0})"
@@ -28,5 +29,8 @@ class Cell(var x: Int, var y: Int,
         return result
     }
 
+    fun getColor(st: Int = this.state): String {
+        return colors[st]?:"0x111111"
+    }
 
 }

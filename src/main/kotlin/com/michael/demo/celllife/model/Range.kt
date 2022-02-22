@@ -2,6 +2,10 @@ package com.michael.demo.celllife.model
 
 class Range(val min: Int, val max: Int) {
 
+    private var range = max - min
+
+    fun range() = range
+
     fun hasIntersection(other: Range): Boolean {
         return contains(other.min) or contains(other.max)
     }
