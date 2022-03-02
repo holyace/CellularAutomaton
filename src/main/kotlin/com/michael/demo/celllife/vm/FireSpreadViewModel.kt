@@ -12,10 +12,8 @@ class FireSpreadViewModel: BaseCellViewModel() {
 
     override fun initialize(cells: List<Cell>) {
 //        super.initialize(cells)
-        var minX = 0
-        var maxX = 0
-        var minY = 0
-        var maxY = 0
+
+        val region = Region()
 
         val boundCell = mutableMapOf<Int, Cell>()
 
@@ -27,11 +25,11 @@ class FireSpreadViewModel: BaseCellViewModel() {
 
             mCells.add(it)
 
-            minX = min(minX, it.x)
-            maxX = max(maxX, it.x)
+            region.rx.min = min(region.rx.min, it.x)
+            region.rx.max = max(region.rx.max, it.x)
 
-            minY = min(minY, it.y)
-            maxY = max(maxY, it.y)
+            region.ry.min = min(region.ry.min, it.y)
+            region.ry.max = max(region.ry.max, it.y)
 
             val old = boundCell[it.y]
             if (old == null || it.x < old.x) {
@@ -39,7 +37,7 @@ class FireSpreadViewModel: BaseCellViewModel() {
             }
         }
 
-        mRegion = Region(minX, maxX, minY, maxY)
+        mRegion = region
 
         mBoundCell = boundCell.values.toSet()
     }

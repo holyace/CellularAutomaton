@@ -1,16 +1,9 @@
 package com.michael.demo.celllife.ext
 
-class Ext {
+import java.util.*
 
-    infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
-        require(start.isFinite())
-        require(endInclusive.isFinite())
-        require(step > 0.0) { "Step must be positive, was: $step." }
-        val sequence = generateSequence(start) { previous ->
-            if (previous == Double.POSITIVE_INFINITY) return@generateSequence null
-            val next = previous + step
-            if (next > endInclusive) null else next
-        }
-        return sequence.asIterable()
-    }
+internal inline fun measureTime(block: () -> Unit): Long {
+    val now = System.currentTimeMillis()
+    block()
+    return System.currentTimeMillis() - now
 }

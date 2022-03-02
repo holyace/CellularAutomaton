@@ -1,5 +1,6 @@
 package com.michael.demo.celllife.controller
 
+import com.michael.demo.celllife.ext.measureTime
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
 import com.michael.demo.celllife.vm.BaseCellViewModel
@@ -39,8 +40,12 @@ class MainController : IController {
 
     private val mTimer by lazy { Timer("evolution-timer") }
 
-    private val mInitializeCell = listOf(
-            Cell(0, 1), Cell(1, 0), Cell(-1, -1), Cell(0, -1), Cell(1, -1))
+    private val mInitializeCell by lazy {
+        listOf(
+                Cell(0, 1), Cell(1, 0), Cell(-1, -1),
+                Cell(0, -1), Cell(1, -1)
+        )
+    }
 
     private val mViewModel by lazy {
         val vm: BaseCellViewModel = FireSpreadViewModel()
@@ -54,11 +59,9 @@ class MainController : IController {
     private val mEvolutionTask by lazy {
         Runnable {
             try {
-                val now = System.currentTimeMillis()
+                val cost = measureTime { mCells = mViewModel.evolution() }
 
-                mCells = mViewModel.evolution()
-
-                println("run evolution cells: ${mCells.size}, cost: ${System.currentTimeMillis() - now}ms")
+                println("run evolution cells: ${mCells.size}, cost: $cost ms")
 
                 Platform.runLater {
                     updateDraw()
@@ -69,44 +72,31 @@ class MainController : IController {
         }
     }
 
-    @FXML
-    var editPane: Pane? = null
+    @FXML var editPane: Pane? = null
 
-    @FXML
-    var controlPane: Pane? = null
+    @FXML var controlPane: Pane? = null
 
-    @FXML
-    var reset: Button? = null
+    @FXML var reset: Button? = null
 
-    @FXML
-    var start: Button? = null
+    @FXML var start: Button? = null
 
-    @FXML
-    var once: Button? = null
+    @FXML var once: Button? = null
 
-    @FXML
-    var stop: Button? = null
+    @FXML var stop: Button? = null
 
-    @FXML
-    var canvas: Canvas? = null
+    @FXML var canvas: Canvas? = null
 
-    @FXML
-    var startEdit: Button? = null
+    @FXML var startEdit: Button? = null
 
-    @FXML
-    var randomCell: Button? = null
+    @FXML var randomCell: Button? = null
 
-    @FXML
-    var seekBar: Slider? = null
+    @FXML var seekBar: Slider? = null
 
-    @FXML
-    var density: TextField? = null
+    @FXML var density: TextField? = null
 
-    @FXML
-    var clearEdit: Button? = null
+    @FXML var clearEdit: Button? = null
 
-    @FXML
-    var completeEdit: Button? = null
+    @FXML var completeEdit: Button? = null
 
     fun handleButtonAction(event: MouseEvent) {
         try {
@@ -136,16 +126,18 @@ class MainController : IController {
 
                 else -> println("unknown event: ${event.source}")
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e.printStackTrace()
         }
     }
 
     private fun resetCellEvolution() {
-        println("startCellEvolution")
+        println("resetCellEvolution")
         stopCellEvolution()
-        mViewModel.initialize(mInitializeCell)
-        mCells = mInitializeCell
+        mInitializeCell.let {
+            mViewModel.initialize(it)
+            mCells = it
+        }
         updateDraw()
     }
 
@@ -216,6 +208,7 @@ class MainController : IController {
         }
 
         updateButtonState()
+
         canvas?.let {
             mWidth = it.width
             mHeight = it.height
@@ -276,7 +269,6 @@ class MainController : IController {
     }
 
     private fun drawCells(graphics: GraphicsContext, canvas: Canvas) {
-        if (mCells.isNullOrEmpty()) return
         mCells.forEach {
             drawCell(graphics, canvas, it)
         }
@@ -291,20 +283,22 @@ class MainController : IController {
     }
 
     private fun updateDraw() {
-        val now = System.currentTimeMillis()
-        canvas?.graphicsContext2D?.let {
-            it.clearRect(0.0, 0.0, canvas!!.width, canvas!!.height)
-//            it.fill = Color.RED
-//            val r = 10.0
-//            it.fillOval(mCenterX - r / 2.0, mCenterY - r / 2.0, r, r)
-            it.stroke = Color.RED
-            it.lineWidth = 1.0
-            it.strokeLine(mCenterX, 0.0, mCenterX, mHeight)
-            it.strokeLine(0.0, mCenterY, mWidth, mCenterY)
-            drawLines(it, canvas!!)
-            drawCells(it, canvas!!)
+        try {
+            val cost = measureTime {
+                canvas?.graphicsContext2D?.let {
+                    it.clearRect(0.0, 0.0, canvas!!.width, canvas!!.height)
+                    it.stroke = Color.RED
+                    it.lineWidth = 1.0
+                    it.strokeLine(mCenterX, 0.0, mCenterX, mHeight)
+                    it.strokeLine(0.0, mCenterY, mWidth, mCenterY)
+                    drawLines(it, canvas!!)
+                    drawCells(it, canvas!!)
+                }
+            }
+            println("updateDraw cost $cost ms")
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        println("draw cost ${System.currentTimeMillis() - now}ms")
     }
 
     fun handleScrollAction(event: ScrollEvent) {
@@ -320,7 +314,7 @@ class MainController : IController {
 //        println("scale: ${mScale}, event: $event")
             mViewModel.updateRegion(getXIndex(0.0), getXIndex(mWidth), getYIndex(0.0), getYIndex(mHeight))
             updateDraw()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             e.printStackTrace()
         }
     }
@@ -388,20 +382,20 @@ class MainController : IController {
     }
 
     private fun getXIndex(x: Double) = floor((x - mCenterX) / getScaledCellSize()).toInt()
+
     private fun getYIndex(y: Double) = floor((mCenterY - y) / getScaledCellSize()).toInt()
 
     private fun onCanvasClick(x: Double, y: Double) {
         if (!mEditMode) return
-        val xIndex = getXIndex(x)
-        val yIndex = getYIndex(y)
-        val cell = Cell(xIndex, yIndex)
-        val cells = mCells.toMutableList()
-        if (cells.contains(cell)) {
-            cells.remove(cell)
-        } else {
-            cells.add(cell)
+        Cell(getXIndex(x), getYIndex(y)).let {
+            mCells = mCells.toMutableList().apply {
+                if (contains(it)) {
+                    remove(it)
+                } else {
+                    add(it)
+                }
+            }
         }
-        mCells = cells
         updateDraw()
     }
 
@@ -411,7 +405,7 @@ class MainController : IController {
     }
 
     private fun randomCell() {
-        val densityValue = density?.text?.toDouble()?:0.0
+        val densityValue = density?.text?.toDouble() ?: 0.0
         if (isZero(densityValue)) return
 
         val minX = getXIndex(0.1)
@@ -419,14 +413,14 @@ class MainController : IController {
         val minY = getYIndex(mHeight)
         val maxY = getYIndex(0.1)
 
-        val max = ceil(mWidth / getScaledCellSize()).toInt() * ceil(mHeight / getScaledCellSize()).toInt()
+        val max = (maxX - minX) * (maxY - minY)
 
         val cells = mutableListOf<Cell>()
 
         var count = (densityValue * max / 100.0).toInt()
 
         while (count > 0) {
-            val cell = Cell((minX .. maxX).random(), (minY .. maxY).random())
+            val cell = Cell((minX..maxX).random(), (minY..maxY).random())
             if (!cells.contains(cell)) {
                 cells.add(cell)
                 count--
