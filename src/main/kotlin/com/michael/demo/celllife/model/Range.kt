@@ -1,6 +1,6 @@
 package com.michael.demo.celllife.model
 
-class Range(val min: Int, val max: Int) {
+class Range(var min: Int, var max: Int) {
 
     private var range = max - min
 

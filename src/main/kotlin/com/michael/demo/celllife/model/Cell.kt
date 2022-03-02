@@ -1,12 +1,12 @@
 package com.michael.demo.celllife.model
 
 class Cell(var x: Int, var y: Int,
-           private var colors: MutableMap<Int, String> = mutableMapOf(Pair(0, "0x999999"), Pair(1, "0x330000")),
+           private var colors: MutableMap<Int, String> = mutableMapOf(Pair(0, "0x999999"), Pair(1, "0xff0000")),
            var state: Int = 1,
-           var neighbors: MutableList<Cell> = mutableListOf()) {
+           var neighbors: MutableSet<Cell> = mutableSetOf()) {
 
     override fun toString(): String {
-        return "Cell([$x, $y], state: $state, neighbors: ${neighbors?.size?:0})"
+        return "Cell([$x, $y], state: $state, neighbors: ${neighbors.size})"
     }
 
     fun isAlive() = state > 0

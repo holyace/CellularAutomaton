@@ -1,5 +1,3 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
-
 package com.michael.demo.celllife.vm
 
 import com.michael.demo.celllife.model.Cell
@@ -9,10 +7,7 @@ import com.michael.demo.celllife.model.Tribe
 abstract class BaseCellViewModel : ICellViewModel {
     protected var mCells: MutableList<Cell> = mutableListOf()
 
-    private var mMinX = 0
-    private var mMaxX = 0
-    private var mMinY = 0
-    private var mMaxY = 0
+    private val mRegion = Region()
 
     override fun initialize(cells: List<Cell>) {
         mCells.clear()
@@ -24,12 +19,15 @@ abstract class BaseCellViewModel : ICellViewModel {
     }
 
     override fun updateRegion(minX: Int, maxX: Int, minY: Int, maxY: Int) {
-        mMinX = minX
-        mMaxX = maxX
-        mMinY = minY
-        mMaxY = maxY
+        mRegion.apply {
+            rx.min = minX
+            rx.max = maxX
+            ry.min = minY
+            ry.max = maxY
+        }
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     protected companion object {
         const val MIN_DIE_COUNT = 2
         const val MAX_LIVE_COUNT = 3
@@ -45,7 +43,7 @@ abstract class BaseCellViewModel : ICellViewModel {
             return isNeighbors(cell1.x, cell1.y, cell2)
         }
 
-        fun getTribeRegion(members: Collection<Cell>): Region {
+        fun getRegion(members: Collection<Cell>): Region {
             var startX = 0
             var endX = 0
             var startY = 0
@@ -72,19 +70,25 @@ abstract class BaseCellViewModel : ICellViewModel {
             return Region(startX, endX, startY, endY)
         }
 
-        fun findNeighbors(cell: Cell, cells: List<Cell>): MutableList<Cell> {
-            val neighbors = mutableListOf<Cell>()
-            cells.forEach {
-                if (isNeighbors(cell, it)) {
-                    neighbors.add(it)
+        fun findNeighbors(cell: Cell, cells: List<Cell>): MutableSet<Cell> {
+            val neighbors = cell.neighbors.filter { it.isAlive() }.toMutableSet()
+            if (neighbors.size < 8) {
+                run loop@{
+                    cells.forEach {
+                        if (neighbors.size >= 8) return@loop
+                        if (isNeighbors(cell, it)) {
+                            neighbors.add(it)
+                            it.neighbors.add(cell)
+                        }
+                    }
                 }
             }
             return neighbors
         }
 
-        fun findCell(x: Int, y: Int, cells: Collection<Cell>): Pair<Cell?, MutableList<Cell>> {
+        fun findCell(x: Int, y: Int, cells: Collection<Cell>): Pair<Cell?, MutableSet<Cell>> {
             var cell: Cell? = null
-            val neighbors = mutableListOf<Cell>()
+            val neighbors = mutableSetOf<Cell>()
             cells.forEach {
                 if (it.x == x && it.y == y) {
                     cell = it
@@ -98,7 +102,7 @@ abstract class BaseCellViewModel : ICellViewModel {
         fun getTribe(cell: Cell): Tribe {
             val members = mutableListOf<Cell>()
             getTribeMembers(cell, mutableListOf(), members)
-            return Tribe(cell, members, getTribeRegion(members))
+            return Tribe(cell, members, getRegion(members))
         }
 
         private fun getTribeMembers(cell: Cell?, visited: MutableList<Cell>, members: MutableList<Cell>) {
@@ -112,7 +116,7 @@ abstract class BaseCellViewModel : ICellViewModel {
                 members.add(cell)
             }
 
-            val neighbors = cell.neighbors!!.toMutableList()
+            val neighbors = cell.neighbors.toMutableList()
             while (neighbors.isNotEmpty()) {
                 getTribeMembers(neighbors.removeAt(0), visited, members)
             }

@@ -2,16 +2,14 @@ package com.michael.demo.celllife.model
 
 data class Region constructor(val rx: Range, val ry: Range) {
 
-    constructor(minX: Int, maxX: Int, minY: Int, maxY: Int):
+    constructor(minX: Int = 0, maxX: Int = 0, minY: Int = 0, maxY: Int = 0):
             this(Range(minX, maxX), Range(minY, maxY))
 
     fun rangeX() = rx.range()
 
     fun rangeY() = ry.range()
 
-    fun contains(x: Int, y: Int): Boolean {
-        return rx.contains(x) and ry.contains(y)
-    }
+    fun contains(x: Int, y: Int) = rx.contains(x) and ry.contains(y)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -31,7 +29,5 @@ data class Region constructor(val rx: Range, val ry: Range) {
         return result
     }
 
-    override fun toString(): String {
-        return "Region($rx, $ry)"
-    }
+    override fun toString() = "Region($rx, $ry)"
 }

@@ -6,7 +6,7 @@ class CellViewModelV2 : BaseCellViewModel() {
 
     override fun evolution(): List<Cell> {
 
-        val region = getTribeRegion(mCells)
+        val region = getRegion(mCells)
 
         println("evolution region: $region, cells: ${mCells.size}")
 
