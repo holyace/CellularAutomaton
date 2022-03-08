@@ -4,8 +4,6 @@ import com.michael.demo.celllife.ext.measureTime
 import com.michael.demo.celllife.model.Cell
 import com.michael.demo.celllife.model.Point2D
 import com.michael.demo.celllife.vm.BaseCellViewModel
-import com.michael.demo.celllife.vm.CellViewModelV2
-import com.michael.demo.celllife.vm.CellViewModelV3
 import com.michael.demo.celllife.vm.FireSpreadViewModel
 import javafx.application.Platform
 import javafx.fxml.FXML
@@ -22,7 +20,6 @@ import javafx.scene.paint.Color
 import java.net.URL
 import java.util.*
 import kotlin.math.abs
-import kotlin.math.ceil
 import kotlin.math.floor
 
 class MainController : IController {
@@ -278,8 +275,8 @@ class MainController : IController {
     private fun drawCell(graphics: GraphicsContext, canvas: Canvas, cell: Cell) {
         val cellSize = getScaledCellSize()
         graphics.fill = getColor(cell)
-        transformCoordinate(cell, mCenterX, mCenterY, cellSize, sPoint2D)
-        graphics.fillRect(sPoint2D.x, sPoint2D.y, cellSize, cellSize)
+        transformCoordinate(cell, mCenterX, mCenterY, cellSize, sLeftTop)
+        graphics.fillRect(sLeftTop.x, sLeftTop.y, cellSize, cellSize)
     }
 
     private fun updateDraw() {
@@ -439,7 +436,7 @@ class MainController : IController {
 
         private var THRESHOLD = 1000 * Double.MIN_VALUE
 
-        private val sPoint2D = Point2D(0.0, 0.0)
+        private val sLeftTop = Point2D(0.0, 0.0)
 
         const val SHORT_LINE = 5.0
 
@@ -454,6 +451,7 @@ class MainController : IController {
         const val SCROLL_SCALE_FACTOR = 2
 
         const val MIN_SCALE = MIN_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
+
         const val MAX_SCALE = MAX_CELL_SIZE / (DEFAULT_STEP_SIZE * STEP_GROUP_COUNT)
 
         const val DELAY = 100L
@@ -464,9 +462,9 @@ class MainController : IController {
         }
 
         fun transformCoordinate(cell: Cell, centerX: Double, centerY: Double,
-                                cellSize: Double, out: Point2D) {
-            out.x = centerX + cell.x * cellSize
-            out.y = centerY - (cell.y + 1) * cellSize
+                                cellSize: Double, leftTop: Point2D) {
+            leftTop.x = centerX + cell.x * cellSize
+            leftTop.y = centerY - (cell.y + 1) * cellSize
         }
     }
 }
