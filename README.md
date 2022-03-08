@@ -13,3 +13,5 @@ for each cell and does not change over time, and is applied to the whole grid si
 known, such as the stochastic cellular automaton and asynchronous cellular automaton.
 
 This project use javafx.
+
+![demo](pic/demo.png)
